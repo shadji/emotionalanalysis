@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BlazeFace Face Detection with Emoji Prediction</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f4f4f4;
+    }
+    .container {
+      position: relative;
+      width: 640px;
+    }
+    video {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+    }
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    .emoji {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      width: 50px;
+      height: 50px;
+      z-index: 10;
+    }
+.bar-graph {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 400px;
+  height: 150px; /* Increased height to accommodate labels */
+  margin-top: 20px;
+  background-color: #eee;
+  border-radius: 8px;
+  padding: 5px;
+}
+
+.bar-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  width: 20%;
+}
+
+.bar {
+  width: 100%;
+  background-color: #2196f3;
+  border-radius: 4px;
+  transition: height 0.3s ease;
+}
+/* Corresponding colors for each class */
+#bar-0 { background-color: green; }  /* Happy */
+#bar-1 { background-color: gray; }   /* Neutral */
+#bar-2 { background-color: red; }    /* Sad */
+#bar-3 { background-color: #FFA500; } /* Surprise */
+label {
+  margin-top: 5px;
+  font-size: 14px;
+  color: #333;
+}
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Webcam video stream -->
+    <video id="video" autoplay playsinline></video>
+
+    <!-- Canvas to draw bounding boxes -->
+    <canvas id="overlay"></canvas>
+
+    <!-- Emoji display -->
+    <div id="emoji" class="emoji"></div>
+  </div>
+<div id="barGraph" class="bar-graph">
+  <div class="bar-container">
+    <div class="bar" id="bar-0" style="height: 0;"></div>
+    <label for="bar-0">Happy</label>
+  </div>
+  <div class="bar-container">
+    <div class="bar" id="bar-1" style="height: 0;"></div>
+    <label for="bar-1">Neutral</label>
+  </div>
+  <div class="bar-container">
+    <div class="bar" id="bar-2" style="height: 0;"></div>
+    <label for="bar-2">Sad</label>
+  </div>
+  <div class="bar-container">
+    <div class="bar" id="bar-3" style="height: 0;"></div>
+    <label for="bar-3">Surprise</label>
+  </div>
+</div>
+  <!-- TensorFlow.js and BlazeFace -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-tflite@0.0.1-alpha.8/dist/tf-tflite.min.js"></script>
+
+  <script>
+    let blazefaceModel, emojiModel, video, canvas, ctx;
+
+    // Load the BlazeFace and Emoji predictor models
+    async function loadModels() {
+      blazefaceModel = await blazeface.load(); // Load BlazeFace model
+      emojiModel = await tflite.loadTFLiteModel('emoji_4.tflite'); // Load your emoji TFLite model
+      console.log("Models loaded successfully.");
+    }
+
+    async function setupCamera() {
+      video = document.getElementById('video');
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user' } // front-facing camera
+      });
+      video.srcObject = stream;
+
+      return new Promise((resolve) => {
+        video.onloadedmetadata = () => {
+          resolve(video);
+        };
+      });
+    }
+
+    // Detect faces and predict emojis
+    async function detectFaces() {
+      const predictions = await blazefaceModel.estimateFaces(video, false);
+
+      // Clear the canvas before drawing new bounding boxes
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (predictions.length > 0) {
+        for (const prediction of predictions) {
+          const [x, y] = prediction.topLeft;
+          const [right, bottom] = prediction.bottomRight;
+          const width = right - x;
+          const height = bottom - y;
+
+          // Draw bounding box
+          ctx.beginPath();
+          ctx.strokeStyle = "red";
+          ctx.lineWidth = 2;
+          ctx.rect(x, y, width, height);
+          ctx.stroke();
+
+          // Extract and pass face region to emoji predictor
+          await predictEmojiFromFace(x, y, width, height);
+        }
+      }
+
+      requestAnimationFrame(detectFaces); // Continuously detect faces
+    }
+
+    // Preprocess face region and pass it to the emoji predictor
+    async function predictEmojiFromFace(x, y, width, height) {
+      const faceCanvas = document.createElement('canvas');
+      faceCanvas.width = 96; // Resize the face to 96x96 for the emoji predictor
+      faceCanvas.height = 96;
+      const faceCtx = faceCanvas.getContext('2d');
+
+      // Draw the face region onto the canvas
+      faceCtx.drawImage(video, x, y, width, height, 0, 0, 96, 96);
+
+      // Extract image data and preprocess it
+      const imageData = faceCtx.getImageData(0, 0, 96, 96);
+      const imgArray = [];
+      for (let i = 0; i < imageData.data.length; i += 4) {
+        imgArray.push(imageData.data[i] / 255);     // R channel normalized
+        imgArray.push(imageData.data[i + 1] / 255); // G channel normalized
+        imgArray.push(imageData.data[i + 2] / 255); // B channel normalized
+      }
+
+      // Convert to tensor
+      const imgTensor = tf.tensor4d(imgArray, [1, 96, 96, 3]);
+
+      // Predict emoji
+      const prediction = await emojiModel.predict(imgTensor);
+        // Update the bars with relative percentages
+      const predictionData = prediction.dataSync(); // This will give probabilities for each class
+
+      // Update the bars with relative percentages
+      updateBarGraph(predictionData);
+      const predictedClass = prediction.argMax(-1).dataSync()[0];
+
+      // Display emoji based on prediction
+      displayEmoji(predictedClass);
+    }
+    function updateBarGraph(predictionData) {
+      for (let i = 0; i < 4; i++) {
+        const bar = document.getElementById(`bar-${i}`);
+        const percentage = predictionData[i] * 100; // Convert to percentage
+        bar.style.height = `${percentage}%`;
+      }
+    }
+    // Display emoji in the corner based on prediction
+    function displayEmoji(prediction) {
+      const emojiElement = document.getElementById('emoji');
+      emojiElement.innerHTML = ''; // Clear previous emoji
+
+      if (prediction === 0) {
+        emojiElement.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="green"/><path d="M15 10.5a1 1 0 100-2 1 1 0 000 2zm-6 0a1 1 0 100-2 1 1 0 000 2zm7 4a4 4 0 01-8 0h8z" fill="#000"/></svg>`;
+      } else if (prediction === 1) {
+        emojiElement.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#C0C0C0"/><circle cx="9" cy="10" r="1"/><circle cx="15" cy="10" r="1"/><path d="M8 16h8v1H8z" fill="#000"/></svg>`;
+      } else if (prediction === 2) {
+        emojiElement.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="red"/><circle cx="9" cy="10" r="1" fill="#000"/><circle cx="15" cy="10" r="1" fill="#000"/><path d="M8 17c2-3 6-3 8 0" fill="none" stroke="#000" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+      } else if (prediction === 3) {
+        emojiElement.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#FFA500"/><circle cx="9" cy="10" r="1" fill="#000"/><circle cx="15" cy="10" r="1" fill="#000"/><circle cx="12" cy="16" r="2.5" fill="none" stroke="#000" stroke-width="1.5"/></svg>`;
+      }
+    }
+
+    // Main function to set up camera and models
+    async function main() {
+      await setupCamera();
+      video.play();
+
+      // Set up canvas overlay
+      canvas = document.getElementById('overlay');
+      ctx = canvas.getContext('2d');
+
+      // Set the canvas dimensions to match the video
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      // Load models
+      await loadModels();
+
+      // Start detecting faces and predicting emojis
+      detectFaces();
+    }
+
+    main(); // Run the application
+  </script>
+
+</body>
+</html>
