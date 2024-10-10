@@ -6,14 +6,15 @@ This project demonstrates real-time emotion prediction by detecting faces using 
 ```mermaid
 graph TB
     %% Define Subgraphs (User I/O, APP Logic, and AI Processing)
-
-    %% AI System Subgraph (Data Processing)
+%% Outer Subgraph labeled "Edge Computing"
+subgraph Edge_Computing [Edge]
+    direction TB
+    %% Define Subgraphs (User I/O, APP Logic, and AI Processing)
     subgraph AI_System [AI Models]
         direction TB
-        C["⚙️ Extract Face - BlazeFace"]
-        D["☺️ Predict - Emotional AI"]
+        C["🔧 Extract Face - BlazeFace"]
+        D["😄 Predict - Emotional AI"]
     end
-    %% User Input/Output Subgraph (Capturing Video and Showing Results)
     subgraph User_IO [UI and App Logic]
         direction TB
         A["📹 User's Camera"]
@@ -21,6 +22,9 @@ graph TB
         E["📊 Real-Time Emotion Feedback"]
         F["🖥️📱 User Interface"]
     end
+      %% Define Flow Between Subgraphs
+end
+
 
 
 
@@ -28,6 +32,10 @@ graph TB
     A -->|Video Feed| B -->|Video Frame| C -->|Face Image| D -->|Emotion Tensor| E -->|Emotion Result| F
 
     %% Style and Node Coloring
+    %% Style and Node Coloring
+    style Edge_Computing fill:#FFFFFF,stroke:#333,stroke-width:2px
+    style User_IO fill:#FFF7C2,stroke:#333,stroke-width:2px
+    style AI_System fill:#FFD4D4,stroke:#333,stroke-width:2px   
     style A fill:#f96,stroke:#333,stroke-width:2px
     style F fill:#ffc107,stroke:#333,stroke-width:2px
     style B fill:#6f9,stroke:#333,stroke-width:2px
@@ -37,6 +45,7 @@ graph TB
 
     %% Arrow styling for consistency
     linkStyle default stroke:#333,stroke-width:2px,fill:none
+
 ```
 ## Features
 - **Face Detection**: Uses the BlazeFace model to detect faces in the video stream.
