@@ -2,7 +2,7 @@
 # Emotion Prediction with BlazeFace and TFLite Models
 
 This project demonstrates real-time emotion prediction by detecting faces using the BlazeFace model and predicting emotions using a TFLite model. The emotions are visualized by overlaying corresponding emoji icons on top of the video stream, and a dynamic bar graph is displayed below the video to show the relative probabilities of each emotion.
-## Overview
+
 ```mermaid
 graph TB
     %% Define Subgraphs (User I/O, APP Logic, and AI Processing)
@@ -47,6 +47,8 @@ end
     linkStyle default stroke:#333,stroke-width:2px,fill:none
 
 ```
+**Visualization of the emotional detection flow in this demo project: capturing video, detecting faces, predicting emotions, and displaying results in real time.**
+
 ## Features
 - **Face Detection**: Uses the BlazeFace model to detect faces in the video stream.
 - **Emotion Prediction**: Uses a TFLite model to classify emotions into four categories: Happy, Neutral, Sad, and Surprise.
