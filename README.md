@@ -6,28 +6,26 @@ This project demonstrates real-time emotion prediction by detecting faces using 
 ```mermaid
 graph TB
     %% Define Subgraphs (User I/O, APP Logic, and AI Processing)
-    subgraph AI_System [AI Processing]
+
+    %% AI System Subgraph (Data Processing)
+    subgraph AI_System [AI Models]
         direction TB
-        C["<i class='fa fa-cogs'></i> Face Extraction & Preprocessing"]
-        D["<i class='fa fa-smile'></i> Emotion Detection - Emotional AI"]
+        C["<i class='fa fa-cogs'></i> Extract Face - BlazeFace"]
+        D["<i class='fa fa-smile'></i> Predic Emotiom - Emotional AI"]
     end
-    subgraph APP_Logic [APP Logic]
-        direction TB
-        B["<i class='fa fa-search'></i> Capture Frame"]
-        E["<i class='fa fa-bar-chart'></i> Real-Time Emotion Feedback"]
-    end   
-    subgraph User_IO [User Input/Output]
+    %% User Input/Output Subgraph (Capturing Video and Showing Results)
+    subgraph User_IO [UI and App Logic]
         direction TB
         A["<i class='fa fa-camera'></i> User's Camera"]
+        B["<i class='fa fa-search'></i> Capture Frame"]
+        E["<i class='fa fa-bar-chart'></i> Real-Time Emotion Feedback (Action)"]
         F["<i class='fa fa-desktop'></i> User Interface"]
     end
 
 
 
-   
-
-    %% Define Flow between Subgraphs
-    A -->|Video Feed| B -->|Detect Face| C -->|Processed Face Data| D -->|Classified Emotion| E -->|Show Results| F
+    %% Define Flow Between Subgraphs
+    A -->|Video Feed| B -->|Video Frame| C -->|Face Image| D -->|Emotion Tensor| E -->|Emotion Result| F
 
     %% Style and Node Coloring
     style A fill:#f96,stroke:#333,stroke-width:2px
