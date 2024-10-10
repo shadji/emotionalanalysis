@@ -70,8 +70,18 @@ end
 
 ### Steps
 
-1. **Download the Project Files**: Make sure to have the `index.html` file in your local environment.
-2. **Open the HTML File**: Simply open `index.html` in your web browser. Ensure the browser has permissions to access your webcam.
+1. **Download the Project Files**:
+   ```
+   git clone https://github.com/shadji/emotionalanalysis.git
+   cd emotionalanalysis
+   ```
+2. **Start a Local Web Server**:
+ 
+   - Using Python:
+     ```
+     python3 -m http.server
+     ```
+   - This will start a web server on `http://localhost:8000`. Open this URL in your browser.
 3. **Watch in Action**: The webcam feed will be displayed on the page. Once the models are loaded, the face detection and emotion prediction will begin. An emoji will appear over your face, and a bar graph will update dynamically to show the relative confidence levels of the four emotion classes:
    - **Happy** (Green)
    - **Neutral** (Gray)
@@ -107,11 +117,6 @@ function updateBarGraph(predictionData) {
 - **Emotion Labels**: The four emotion classes are labeled as "Happy", "Neutral", "Sad", and "Surprise". You can customize these labels by modifying the labels in the `index.html` file.
 - **Bar Graph Colors**: The colors for each emotion are green (Happy), gray (Neutral), red (Sad), and yellow (Surprise). These can be changed in the CSS section.
 - **Prediction Model**: The TFLite model (`emoji_4.tflite`) can be replaced with a custom model if you'd like to predict different emotions.
-
-## Future Enhancements
-- **Add More Classes**: Extend the model to predict additional emotions and update the UI accordingly.
-- **Optimize Performance**: Reduce computational load by predicting every few frames instead of every frame.
-- **Improve Visualization**: Add animations or transitions to the bar graph for a more polished user experience.
 
 ## License
 This project is for educational purposes. Feel free to customize and adapt it for your needs.
