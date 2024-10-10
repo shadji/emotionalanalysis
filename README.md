@@ -10,16 +10,16 @@ graph TB
     %% AI System Subgraph (Data Processing)
     subgraph AI_System [AI Models]
         direction TB
-        C["<i class='fa fa-cogs'></i> Extract Face - BlazeFace"]
-        D["<i class='fa fa-smile'></i> Predic Emotiom - Emotional AI"]
+        C["⚙️ Extract Face - BlazeFace"]
+        D["☺️ Predict - Emotional AI"]
     end
     %% User Input/Output Subgraph (Capturing Video and Showing Results)
     subgraph User_IO [UI and App Logic]
         direction TB
-        A["<i class='fa fa-camera'></i> User's Camera"]
-        B["<i class='fa fa-search'></i> Capture Frame"]
-        E["<i class='fa fa-bar-chart'></i> Real-Time Emotion Feedback (Action)"]
-        F["<i class='fa fa-desktop'></i> User Interface"]
+        A["📹 User's Camera"]
+        B["🔍 Capture Frame"]
+        E["📊 Real-Time Emotion Feedback"]
+        F["🖥️📱 User Interface"]
     end
 
 
