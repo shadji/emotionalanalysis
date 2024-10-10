@@ -2,7 +2,44 @@
 # Emotion Prediction with BlazeFace and TFLite Models
 
 This project demonstrates real-time emotion prediction by detecting faces using the BlazeFace model and predicting emotions using a TFLite model. The emotions are visualized by overlaying corresponding emoji icons on top of the video stream, and a dynamic bar graph is displayed below the video to show the relative probabilities of each emotion.
+## Overview
+```mermaid
+graph TB
+    %% Define Subgraphs (User I/O, APP Logic, and AI Processing)
+    subgraph AI_System [AI Processing]
+        direction TB
+        C["<i class='fa fa-cogs'></i> Face Extraction & Preprocessing"]
+        D["<i class='fa fa-smile'></i> Emotion Detection - Emotional AI"]
+    end
+    subgraph APP_Logic [APP Logic]
+        direction TB
+        B["<i class='fa fa-search'></i> Capture Frame"]
+        E["<i class='fa fa-bar-chart'></i> Real-Time Emotion Feedback"]
+    end   
+    subgraph User_IO [User Input/Output]
+        direction TB
+        A["<i class='fa fa-camera'></i> User's Camera"]
+        F["<i class='fa fa-desktop'></i> User Interface"]
+    end
 
+
+
+   
+
+    %% Define Flow between Subgraphs
+    A -->|Video Feed| B -->|Detect Face| C -->|Processed Face Data| D -->|Classified Emotion| E -->|Show Results| F
+
+    %% Style and Node Coloring
+    style A fill:#f96,stroke:#333,stroke-width:2px
+    style F fill:#ffc107,stroke:#333,stroke-width:2px
+    style B fill:#6f9,stroke:#333,stroke-width:2px
+    style E fill:#69f,stroke:#333,stroke-width:2px
+    style C fill:#ffeb3b,stroke:#333,stroke-width:2px
+    style D fill:#f36,stroke:#fff,stroke-width:2px
+
+    %% Arrow styling for consistency
+    linkStyle default stroke:#333,stroke-width:2px,fill:none
+```
 ## Features
 - **Face Detection**: Uses the BlazeFace model to detect faces in the video stream.
 - **Emotion Prediction**: Uses a TFLite model to classify emotions into four categories: Happy, Neutral, Sad, and Surprise.
