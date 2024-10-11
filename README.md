@@ -1,6 +1,10 @@
 
 # Emotion Prediction with BlazeFace and TFLite Models
 
+### Live Demo
+See [Live Demo](https://shadji.github.io/emotionalanalysis/) here.
+
+### Overview
 This project demonstrates real-time emotion prediction by detecting faces using the BlazeFace model and predicting emotions using a TFLite model. The emotions are visualized by overlaying corresponding emoji icons on top of the video stream, and a dynamic bar graph is displayed below the video to show the relative probabilities of each emotion.
 
 ```mermaid
