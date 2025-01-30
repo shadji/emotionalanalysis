@@ -51,6 +51,15 @@
       height: 50px;
       z-index: 10;
     }
+    .gauge-container {
+      position: relative;
+      width: 300px;
+      height: 150px;
+    }
+    .needle {
+      transform-origin: bottom center;
+      transition: transform 0.5s ease-in-out;
+    }
 .bar-graph {
   display: flex;
   justify-content: space-between;
@@ -90,7 +99,21 @@ label {
   </style>
 </head>
 <body>
-
+  <div class="gauge-container">
+    <svg width="300" height="150" viewBox="0 0 300 150">
+      <!-- Gauge Background -->
+      <path d="M 20 130 A 110 110 0 0 1 280 130" fill="none" stroke="#ccc" stroke-width="20" />
+      
+      <!-- Sentiment Ranges -->
+      <path d="M 20 130 A 110 110 0 0 1 110 30" fill="none" stroke="red" stroke-width="20" />
+      <path d="M 110 30 A 110 110 0 0 1 190 30" fill="none" stroke="yellow" stroke-width="20" />
+      <path d="M 190 30 A 110 110 0 0 1 280 130" fill="none" stroke="green" stroke-width="20" />
+      
+      <!-- Needle -->
+      <line id="needle" x1="150" y1="130" x2="150" y2="40" stroke="black" stroke-width="5" class="needle" />
+    </svg>
+  </div>
+  
   <div class="container">
     <!-- Webcam video stream -->
     <video id="video" autoplay playsinline></video>
@@ -126,7 +149,8 @@ label {
 
 <script>
 let blazefaceModel, emojiModel, video, canvas, ctx;
-
+    let sentimentHistory = [];
+    const maxHistoryLength = 50;
 // Load the BlazeFace and Emoji predictor models
 async function loadModels () {
   blazefaceModel = await blazeface.load(); // Load BlazeFace model
@@ -206,11 +230,40 @@ async function predictEmojiFromFace (x, y, width, height) {
 
   // Update the bars with relative percentages
   updateBarGraph(predictionData);
+  updateGaugeFromTensor(predictionData)
   const predictedClass = prediction.argMax(-1).dataSync()[0];
 
   // Display emoji based on prediction
   displayEmoji(predictedClass);
 }
+   function mapTensorToSentiment(predictions) {
+      let sentimentScore = (predictions[0] * 1) + (predictions[3] * 0.5) + (predictions[2] * -1);
+      sentimentScore = Math.max(-1, Math.min(1, sentimentScore));
+      return sentimentScore;    
+    }
+    
+    function updateGaugeFromTensor(predictions) {
+      let sentimentScore = mapTensorToSentiment(predictions);
+      
+      // Store sentiment in history with a weighted approach
+      sentimentHistory.push(sentimentScore);
+      if (sentimentHistory.length > maxHistoryLength) {
+        sentimentHistory.shift();
+      }
+      
+      // Compute weighted average
+      let weightedSum = 0;
+      let weightTotal = 0;
+      sentimentHistory.forEach((value, index) => {
+        let weight = index + 1;
+        weightedSum += value * weight;
+        weightTotal += weight;
+      });
+      
+      let averagedSentiment = weightedSum / weightTotal;
+      let angle = averagedSentiment * 90; // Convert to gauge angle
+      document.getElementById("needle").style.transform = `rotate(${angle}deg)`;
+          }
 function updateBarGraph (predictionData) {
   for (let i = 0; i < 4; i++) {
     const bar = document.getElementById(`bar-${i}`);
